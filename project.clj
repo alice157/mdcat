@@ -8,8 +8,9 @@
                  [com.rpl/specter "1.1.4"]
                  [com.vladsch.flexmark/flexmark-all "0.64.8"]
                  [clojure.java-time "1.2.0"]
-                 [org.clojure/tools.cli "1.0.219"]]
-  :main ^:skip-aot mdcat.core
+                 [org.clojure/tools.cli "1.0.219"]
+                 [mvxcvi/puget "1.3.4"]]
+  :main ^:skip-aot mdcat.main
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}})
