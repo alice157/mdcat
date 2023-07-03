@@ -5,6 +5,9 @@
     [java-time :as t]))
 
 
+(set! *warn-on-reflection* true)
+
+
 (def data
   [:md/document
    [:md/bullet-list

@@ -86,7 +86,7 @@
 (derive :md/section-container :md/container)
 
 
-(ns-unmap *ns* 'walk)
+#_(ns-unmap *ns* 'walk)
 (defmulti walk tag)
 
 
@@ -114,7 +114,7 @@
     (.parse parser s)))
 
 
-(ns-unmap *ns* 'render)
+#_(ns-unmap *ns* 'render)
 (defmulti render (fn [node args]
                    (first node)))
 

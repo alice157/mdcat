@@ -1,21 +1,22 @@
 (ns mdcat.main
-  (:gen-class)
+  (:gen-class :main true)
   (:require
     [clojure.tools.cli :as cli]
-    [mdcat.generation :as gen]
     [mdcat.task :as task]
     [puget.printer :as puget]))
 
 
+(set! *warn-on-reflection* true)
+
 ;; Forgive me
-(def ^:dynamic *pipeline* nil)
+(def pipeline (atom []))
 
 
 (defn- conj-pipeline-fn
   [k]
   (fn conj-pipeline
     [_ x]
-    (swap! *pipeline* conj [k x])))
+    (swap! pipeline conj [k x])))
 
 
 (def cli-options
@@ -53,12 +54,12 @@
 
 (defn parse-opts
   [args]
-  (with-bindings {#'*pipeline* (atom [])}
-    (let [opts (cli/parse-opts args cli-options)
-          pipeline @*pipeline*]
-      (if (seq pipeline)
-        (assoc opts :pipeline pipeline)
-        opts))))
+  (reset! pipeline [])
+  (let [opts (cli/parse-opts args cli-options)
+        pipeline @pipeline]
+    (if (seq pipeline)
+      (assoc opts :pipeline pipeline)
+      opts)))
 
 
 (defn -main
@@ -81,6 +82,3 @@
       :else
       (usage opts))))
 
-
-(comment
-)

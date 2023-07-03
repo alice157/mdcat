@@ -4,6 +4,9 @@
     [clojure.string :as str]))
 
 
+(set! *warn-on-reflection* true)
+
+
 (defn git
   [ctx & args]
   (apply sh/sh (concat ["/usr/bin/env" "git"] args [:dir (:cd ctx)])))

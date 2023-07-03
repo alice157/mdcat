@@ -5,6 +5,8 @@
     [puget.printer :as puget]))
 
 
+(set! *warn-on-reflection* true)
+
 ;; Task context tools
 
 (defn last-resource

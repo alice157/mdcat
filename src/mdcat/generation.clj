@@ -7,6 +7,9 @@
     java.util.Date))
 
 
+(set! *warn-on-reflection* true)
+
+
 (defn task
   [config output [action in out]]
   (case action
@@ -22,7 +25,3 @@
         txn (git/open-txn git-ctx "main")]
     (reduce (partial task config) {} (:tasks config))
     (git/close-txn git-ctx txn (str "Generated at " (System/currentTimeMillis)))))
-
-
-(comment
-  (generate config))

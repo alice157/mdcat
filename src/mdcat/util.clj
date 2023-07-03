@@ -6,6 +6,9 @@
     java.io.File))
 
 
+(set! *warn-on-reflection* true)
+
+
 (defn nested-update
   [v f]
   (let [v' (f v)]
