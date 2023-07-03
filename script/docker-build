@@ -89,6 +89,7 @@ docker build --build-arg GRAAL_STATIC=$GRAAL_STATIC -t $DOCKER_IMAGE_NAME:$MDCAT
 
 DOCKER_CONTAINER_ID=$(docker create $DOCKER_IMAGE_NAME:$MDCAT_VERSION)
 docker cp "${DOCKER_CONTAINER_ID}:/opt/mdcat/mdcat" "$MDCAT_OUTPUT"
+docker cp "${DOCKER_CONTAINER_ID}:/opt/mdcat/target/uberjar/mdcat.jar" "$MDCAT_OUTPUT.jar"
 
 msg "Wrote executable to $MDCAT_OUTPUT"
 ls -lh $MDCAT_OUTPUT

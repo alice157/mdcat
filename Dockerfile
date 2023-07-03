@@ -1,4 +1,4 @@
-FROM clojure:openjdk-11-lein-2.9.1
+FROM clojure:temurin-11-lein
 
 # Install essential tooling
 RUN apt update
