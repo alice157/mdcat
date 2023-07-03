@@ -1,11 +1,13 @@
 (ns mdcat.task
   (:require
+    [clojure.string :as str]
     [mdcat.markdown :as md]
     [mdcat.xforms :as xforms]
     [puget.printer :as puget]))
 
 
 (set! *warn-on-reflection* true)
+
 
 ;; Task context tools
 
@@ -27,7 +29,7 @@
   (let [s (read-resource ctx input)]
     (cond
       (nil? output)
-      (println s)
+      ctx
 
       (keyword? output)
       (-> ctx
@@ -35,7 +37,8 @@
           (last-resource output))
 
       (string? output)
-      (spit output s)
+      (do (spit output s)
+          ctx)
 
       :else
       (throw (ex-info "Cannot output to resource" {:output output})))))
@@ -43,8 +46,11 @@
 
 ;; Human-friendly building blocks
 
+
+
 (defn select-resource
   ([ctx input as]
+   (assert (or (not as) (keyword? as)))
    (output-resource ctx input as))
   ([ctx input]
    (select-resource ctx input :selected)))

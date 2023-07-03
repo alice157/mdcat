@@ -1,6 +1,8 @@
 (ns mdcat.main
-  (:gen-class :main true)
+  (:gen-class
+    :main true)
   (:require
+    [clojure.string :as str]
     [clojure.tools.cli :as cli]
     [mdcat.task :as task]
     [puget.printer :as puget]))
@@ -8,26 +10,43 @@
 
 (set! *warn-on-reflection* true)
 
+
 ;; Forgive me
 (def pipeline (atom []))
+
+
+(defn- maybe-keywordify
+  [s]
+  (if (str/starts-with? s ":")
+    (keyword (subs s 1))
+    s))
+
+
+(defn- split-args
+  [s]
+  (if s
+    (map (comp maybe-keywordify str/trim) (str/split s #","))
+    [nil]))
 
 
 (defn- conj-pipeline-fn
   [k]
   (fn conj-pipeline
-    [_ x]
-    (swap! pipeline conj [k x])))
+    [_ args]
+    (swap! pipeline
+           conj (into [k] (map maybe-keywordify (split-args args))))))
 
 
 (def cli-options
   [["-h" "--help"]
-   ["-s" "--select NAME" "selects a resource"
+   ["-o" "--opts" "prints parsed options"]
+   ["-s" "--select FROM,[TO]" "selects a resource"
     :multi true
     :update-fn (conj-pipeline-fn :select)]
-   ["-x" "--xform XFORM" "transforms a resource"
+   ["-x" "--xform [[FROM]],XFORM_ID,[TO]" "transforms a resource"
     :multi true
     :update-fn (conj-pipeline-fn :xform)]
-   ["-w" "--write NAME" "writes a resource"
+   ["-w" "--write [TO]" "writes a resource"
     :multi true
     :update-fn (conj-pipeline-fn :write)]])
 
@@ -48,7 +67,7 @@
   [pipeline]
   (let [out (reduce task/reducer {} pipeline)]
     (if-not (:did-output? out)
-      (task/reducer out [:print nil])
+      (apply (partial task/print-resource out) [nil])
       out)))
 
 
@@ -66,10 +85,12 @@
   "I don't do a whole lot ... yet."
   [& args]
   (let [opts (parse-opts args)]
+    (when (get-in opts [:options :opts])
+      (puget/cprint opts))
     (cond
       (seq (:errors opts))
       (errors opts)
-
+  
       (get-in opts [:options :help])
       (usage opts)
 
@@ -82,3 +103,5 @@
       :else
       (usage opts))))
 
+
+(comment
