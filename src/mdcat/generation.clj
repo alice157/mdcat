@@ -13,15 +13,15 @@
     :read-file (assoc-in output [:files out] (slurp (str (:cd config) in)))
     :output-file (spit (str (:cd config) out)
                        (get-in output [:files in]))
-    :xform-file (update-in output [:files in] md/xform-string (comp xforms/unpack-list xforms/reverse-container))))
+    :xform-file (update-in output [:files in] md/xform-string xforms/reverse-top-level-lists)))
 
 
 (defn generate
   [config]
-  (let [nv-ctx {:cd (:cd config)}
-        txn (nv/open-txn nv-ctx "main")]
+  (let [git-ctx {:cd (:cd config)}
+        txn (git/open-txn git-ctx "main")]
     (reduce (partial task config) {} (:tasks config))
-    (nv/close-txn nv-ctx txn (str "Generated at " (System/currentTimeMillis)))))
+    (git/close-txn git-ctx txn (str "Generated at " (System/currentTimeMillis)))))
 
 
 (comment

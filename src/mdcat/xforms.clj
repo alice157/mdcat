@@ -62,7 +62,6 @@
 
 (defn unpack-list*
   [md]
-  (prn md)
   (into [:md/heading (or (bli-content (second md))
                          (second md))]
         (drop 2 md)))
@@ -73,8 +72,10 @@
   (into (empty md) (cons (first md) (reverse (rest md)))))
 
 
-(comment
-(->> data
-     (s/transform top-level-lists reverse-container*)
-     (s/transform [s/ALL bullet-list? s/ALL bullet-list-item?] unpack-list*)
-     #_(s/select  top-level-headings)))
+(defn reverse-top-level-lists
+  [md]
+  (s/transform top-level-lists reverse-container* md))
+
+
+(def xforms
+  {:reverse-top-level-lists reverse-top-level-lists})

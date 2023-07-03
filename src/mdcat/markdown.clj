@@ -91,12 +91,12 @@
 
 
 (defmethod walk :md/leaf
-  [node]
+  [^Node node]
   [(tag node) (str (.getChars node))])
 
 
 (defmethod walk :md/container
-  [node]
+  [^Node node]
   (into [(tag node)]
         (map walk)
         (.getChildren node)))
@@ -108,9 +108,9 @@
 
 
 (defn parse
-  [s]
+  [^String s]
   (let [options (MutableDataSet.)
-        parser (.build (Parser/builder options))]
+        ^Parser parser (.build (Parser/builder options))]
     (.parse parser s)))
 
 

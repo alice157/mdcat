@@ -72,8 +72,6 @@
   (add-files ctx)
   (commit ctx message))
 
-(commit-all context "test")
-
 
 (defn open-txn
   [ctx ref]
