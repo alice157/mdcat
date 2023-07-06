@@ -47,7 +47,6 @@
 ;; Human-friendly building blocks
 
 
-
 (defn select-resource
   ([ctx input as]
    (assert (or (not as) (keyword? as)))
@@ -83,11 +82,19 @@
       (assoc :did-output? true)))
 
 
+(defn read-resource
+  [])
+
+
+
 (def tasks
   {:select select-resource
    :xform xform-resource
    :print print-resource
-   :write write-resource})
+   :write write-resource
+   
+   :read read-resource
+   :xform2 xform2-resource})
 
 
 (defn reducer

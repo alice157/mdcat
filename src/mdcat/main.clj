@@ -48,7 +48,15 @@
     :update-fn (conj-pipeline-fn :xform)]
    ["-w" "--write [TO]" "writes a resource"
     :multi true
-    :update-fn (conj-pipeline-fn :write)]])
+    :update-fn (conj-pipeline-fn :write)]
+
+
+   ["-r" "--read [[FROM]]" "reads a file"
+    :multi true
+    :update-fn (conj-pipeline-fn :read)]
+   ["-X" "--xform2 SELECTOR,XFORM" "super secret xform2"
+    :multi true
+    :update-fn (conj-pipeline-fn :xform2)]])
 
 
 (defn usage
@@ -102,6 +110,3 @@
 
       :else
       (usage opts))))
-
-
-(comment
