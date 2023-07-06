@@ -12,3 +12,5 @@ pom.xml.asc
 .hgignore
 .hg/
 /mdcat
+.clj-kondo/
+.lsp/

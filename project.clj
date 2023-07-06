@@ -9,7 +9,9 @@
                  [clojure.java-time "1.2.0"]
                  [com.github.clj-easy/graal-build-time "0.1.4"]
                  [org.clojure/tools.cli "1.0.219"]
-                 [mvxcvi/puget "1.3.4"]]
+                 [mvxcvi/puget "1.3.4"]
+                 [instaparse "1.4.12"]
+                 [camel-snake-kebab "0.4.3"]]
   :main mdcat.main
   :target-path "target/%s"
   :profiles {:uberjar {:target-path "target/uberjar"
