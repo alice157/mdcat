@@ -68,6 +68,11 @@
    (xform-resource ctx :selected xform-id :xformed)))
 
 
+(defn xform2-resource
+  []
+  nil)
+
+
 (defn print-resource
   [ctx input]
   (println (str input ":\n"
@@ -83,7 +88,8 @@
 
 
 (defn read-resource
-  [])
+  []
+  nil)
 
 
 

@@ -1,5 +1,7 @@
 (ns mdcat.markdown
   (:require
+    [camel-snake-kebab.core :as csk]
+    [clojure.spec.alpha :as s]
     [clojure.string :as str])
   (:import
     (com.vladsch.flexmark.ast
@@ -7,20 +9,14 @@
       BulletListItem
       Emphasis
       Heading
-      ListBlock
-      ListItem
       Paragraph
       SoftLineBreak
       Text)
     com.vladsch.flexmark.parser.Parser
     (com.vladsch.flexmark.util.ast
       Document
-      Node
-      NodeVisitor
-      VisitHandler
-      Visitor)
+      Node)
     (com.vladsch.flexmark.util.data
-      DataHolder
       MutableDataSet)))
 
 
@@ -40,33 +36,62 @@
   (tag [this]))
 
 
+(def tag-categories
+  #{:md/leaf
+    :md/inline-container
+    :md/section-container
+    :md/newline-container})
+
+
+;; TODO: handle syms with namespaces
+(defmacro deftag
+  [class category]
+  (when-not (contains? tag-categories category)
+    (throw (ex-info "Invalid tag category" {:category category
+                                            :expected tag-categories})))
+  (let [class-str (csk/->kebab-case-string class)
+        predicate-sym (symbol (str class-str "?"))
+        tag-kw (keyword "md" class-str)
+        node-spec-kw (keyword "md" (str class-str "-node"))]
+    `(do
+       (extend-type ~class
+         Tag
+         (tag [~'_this] ~tag-kw))
+
+       (derive ~tag-kw ~category)
+       
+
+       (s/def ~node-spec-kw (fn [])))))
+
+
+(macroexpand '(deftag Text :md/leaf))
 (extend-protocol Tag
   Object
   (tag [this] [:md/unknown (type this)])
 
   BulletList
-  (tag [this] :md/bullet-list)
+  (tag [_this] :md/bullet-list)
 
   Document
-  (tag [this] :md/document)
+  (tag [_this] :md/document)
   
   BulletListItem
-  (tag [this] :md/bullet-list-item)
+  (tag [_this] :md/bullet-list-item)
   
   Paragraph
-  (tag [this] :md/paragraph)
+  (tag [_this] :md/paragraph)
   
   Text
-  (tag [this] :md/text)
+  (tag [_this] :md/text)
 
   Emphasis
-  (tag [this] :md/emphasis)
+  (tag [_this] :md/emphasis)
   
   SoftLineBreak
-  (tag [this] :md/soft-line-break)
+  (tag [_this] :md/soft-line-break)
   
   Heading
-  (tag [this] :md/heading))
+  (tag [_this] :md/heading))
 
 
 (derive :md/text :md/leaf)
@@ -115,7 +140,7 @@
 
 
 #_(ns-unmap *ns* 'render)
-(defmulti render (fn [node args]
+(defmulti render (fn [node _args]
                    (first node)))
 
 
@@ -125,7 +150,7 @@
 
 
 (defmethod render :md/section-container
-  [[tag & children] args]
+  [[_tag & children] args]
   (str
     (str/join "\n\n"
               (map #(render % args) children))
@@ -133,18 +158,18 @@
 
 
 (defmethod render :md/newline-container
-  [[tag & children] args]
+  [[_tag & children] args]
   (str/join "\n"
             (map #(render % args) children)))
 
 
 (defmethod render :md/inline-container
-  [[tag & children] args]
+  [[_tag & children] args]
   (str/join "" (map #(render % args) children)))
 
 
 (defmethod render :md/heading
-  [[tag & children] args]
+  [[_tag & children] args]
   (render (into [:md/newline-container
                  [:md/paragraph [:md/text (str (apply str (repeat (:heading-level args 1) "#"))
                                                " ")]
@@ -154,7 +179,7 @@
 
 
 (defmethod render :md/bullet-list-item
-  [[tag & children] args]
+  [[_tag & children] args]
   (render (into [:md/newline-container
                  [:md/paragraph [:md/text BULLET] (first children)]]
                 (rest children))
@@ -169,7 +194,7 @@
 
 
 (defmethod render :md/bullet-list
-  [[tag & children] args]
+  [[_tag & children] args]
   (let [bullet-level (:bullet-level args 0)]
     (->
       (into [:md/newline-container]
@@ -181,7 +206,7 @@
 
 
 (defmethod render :md/leaf
-  [[tag & children] args]
+  [[_tag & children] _args]
   (str/join "" children))
 
 
