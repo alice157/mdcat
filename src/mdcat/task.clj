@@ -87,10 +87,17 @@
       (assoc :did-output? true)))
 
 
-(defn read-resource
-  []
+#_(defn read-resource
+  [ctx]
   nil)
 
+
+
+(defn parse-resource
+  [ctx input]
+  (prn input)
+  (puget/cprint (md/walk (md/parse (read-resource ctx input))))
+  (assoc ctx :did-output? true))
 
 
 (def tasks
@@ -98,7 +105,8 @@
    :xform xform-resource
    :print print-resource
    :write write-resource
-   
+   :parse parse-resource
+     
    :read read-resource
    :xform2 xform2-resource})
 

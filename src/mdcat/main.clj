@@ -17,15 +17,19 @@
 
 (defn- maybe-keywordify
   [s]
-  (if (str/starts-with? s ":")
+  (if (and (string? s) (str/starts-with? s ":"))
     (keyword (subs s 1))
     s))
 
 
 (defn- split-args
   [s]
-  (if s
+  (prn s)
+  (cond
+    (string? s)
     (map (comp maybe-keywordify str/trim) (str/split s #","))
+    
+    :else
     [nil]))
 
 
@@ -49,7 +53,9 @@
    ["-w" "--write [TO]" "writes a resource"
     :multi true
     :update-fn (conj-pipeline-fn :write)]
-
+   ["-p" "--parse" "prints a parse tree and passes through"
+    :multi true
+    :update-fn (conj-pipeline-fn :parse)]
 
    ["-r" "--read [[FROM]]" "reads a file"
     :multi true
@@ -110,3 +116,5 @@
 
       :else
       (usage opts))))
+
+(comment

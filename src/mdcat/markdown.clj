@@ -56,16 +56,36 @@
     `(do
        (extend-type ~class
          Tag
-         (tag [~'_this] ~tag-kw))
+         (tag [_#] ~tag-kw))
 
        (derive ~tag-kw ~category)
-       
 
-       (s/def ~node-spec-kw (fn [])))))
+       (s/def ~node-spec-kw
+         (s/and vector?
+                #(= ~tag-kw (first %))))
+       (defn ~predicate-sym
+         [md#]
+         (s/valid? ~node-spec-kw md#)))))
 
 
-(macroexpand '(deftag Text :md/leaf))
-(extend-protocol Tag
+(deftag Text :md/leaf)
+(deftag Emphasis :md/leaf)
+(deftag SoftLineBreak :md/leaf)
+
+(deftag Heading :md/newline-container)
+(deftag BulletListItem :md/newline-container)
+(deftag BulletList :md/newline-container)
+
+(deftag Paragraph :md/inline-container)
+
+(deftag Document :md/section-container)
+
+(extend-type Object
+  Tag
+  (tag [this] [:md/unknown (type this)]))
+
+
+#_(extend-protocol Tag
   Object
   (tag [this] [:md/unknown (type this)])
 
@@ -93,7 +113,7 @@
   Heading
   (tag [_this] :md/heading))
 
-
+(comment
 (derive :md/text :md/leaf)
 (derive :md/emphasis :md/leaf)
 (derive :md/soft-line-break :md/leaf)
@@ -104,7 +124,7 @@
 
 (derive :md/paragraph :md/inline-container)
 
-(derive :md/document :md/section-container)
+(derive :md/document :md/section-container))
 
 (derive :md/newline-container :md/container)
 (derive :md/inline-container :md/container)
