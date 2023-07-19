@@ -1,7 +1,9 @@
 (ns mdcat.selector
   (:require
     [com.rpl.specter :as sp]
-    [instaparse.core :as insta]))
+    [instaparse.core :as insta]
+    [mdcat.markdown :as md]
+    [clojure.string :as str]))
 
 
 ;; list>* should match all top level items of a list
@@ -9,13 +11,9 @@
 
 (def parser
   (insta/parser
-    "selector = symbol | binary_relationship | wildcard
-     wildcard = '*'
-     symbol = #'\\w+'
-     opt_whitespace = #'\\h?'
-     child_operator = '>'
-     binary_operator = child_operator
-     binary_relationship = selector <opt_whitespace> binary_operator <opt_whitespace> selector"))
+    "selector = (symbol <opt_whitespace>)+
+     symbol = #'(\\w|[.])+'
+     opt_whitespace = #'\\h?'"))
 
 
 (defn parse
@@ -23,12 +21,46 @@
   (insta/parse parser s))
 
 
-(defn select
-  [selector md]
-  (s/select [:md/document] md))
+(defmulti ->apath first)
+
+
+(defmethod ->apath :selector
+  [[_ & selectors]]
+  (apply sp/comp-paths (map ->apath selectors)))
+
+
+(defn recursive?
+  [sym]
+  (not (str/starts-with? sym ".")))
+
+
+(defn base
+  [sym]
+  (str/replace sym #"\." ""))
+
+
+(defmethod ->apath :symbol
+  [[_ sym]]
+  (let [pred (get {"list" md/bullet-list?
+                   "item" md/bullet-list-item?
+                   "paragraph" md/paragraph?}
+                  (base sym))]
+    (if (recursive? sym)
+      [sp/ALL pred]
+      (sp/walker pred))))
 
 
 (comment
-(let [document [:md/document [:md/bullet-list [:md/bullet-list-item "foo"] [:md/bullet-list-item "bar"]]]
-      selector (parse "list")]
-  (select selector document)))
+
+(let [document [:md/document
+                [:md/heading
+                 [:md/bullet-list
+                  [:md/bullet-list-item [:md/paragraph [:md/text "foo"]]]
+                  [:md/bullet-list-item [:md/paragraph [:md/text "bar"]]]
+                  [:md/heading [:md/bullet-list-item "qux"]]]]
+                [:md/paragraph [:md/text "baz"]]]
+      selector (parse "list item")]
+  (sp/select (->apath selector) document))
+
+
+)

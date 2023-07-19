@@ -63,6 +63,7 @@
        (s/def ~node-spec-kw
          (s/and vector?
                 #(= ~tag-kw (first %))))
+
        (defn ~predicate-sym
          [md#]
          (s/valid? ~node-spec-kw md#)))))
@@ -237,3 +238,9 @@
       (walk)
       (f)
       (render {})))
+
+
+(defn children
+  [md]
+  (when (vector? md)
+    (rest md)))

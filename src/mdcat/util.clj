@@ -54,3 +54,22 @@
           (home (subs path 1))
           (io/file (home (subs path 1 sep)) (subs path (inc sep)))))
       path)))
+
+
+(def ^{:arglists '([] [coll] [coll x] [coll x & xs])
+       :doc "Like `clojure.core/conj`, but defaults to a vector instead of a list."}
+  conjv
+  (fn conj
+    [& args]
+    (apply (fnil conj []) args)))
+
+
+(defn safe
+  "Returns a fn that wraps `f` and returns nil if an `Exception` is thrown."
+  [f]
+  (fn safe-fn
+    [& args]
+    (try
+      (apply f args)
+      (catch Exception _
+        nil))))
