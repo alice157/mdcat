@@ -114,23 +114,6 @@
   Heading
   (tag [_this] :md/heading))
 
-(comment
-(derive :md/text :md/leaf)
-(derive :md/emphasis :md/leaf)
-(derive :md/soft-line-break :md/leaf)
-
-(derive :md/heading :md/newline-container)
-(derive :md/bullet-list-item :md/newline-container)
-(derive :md/bullet-list :md/newline-container)
-
-(derive :md/paragraph :md/inline-container)
-
-(derive :md/document :md/section-container))
-
-(derive :md/newline-container :md/container)
-(derive :md/inline-container :md/container)
-(derive :md/section-container :md/container)
-
 
 #_(ns-unmap *ns* 'walk)
 (defmulti walk tag)
