@@ -1,9 +1,10 @@
 (ns mdcat.selector
   (:require
+    [clojure.string :as str]
     [com.rpl.specter :as sp]
     [instaparse.core :as insta]
     [mdcat.markdown :as md]
-    [clojure.string :as str]))
+    [mdcat.util :as u]))
 
 
 ;; list>* should match all top level items of a list
@@ -36,18 +37,24 @@
 
 (defn base
   [sym]
-  (str/replace sym #"\." ""))
+  (str/replace sym #"^\." ""))
 
 
 (defmethod ->apath :symbol
   [[_ sym]]
   (let [pred (get {"list" md/bullet-list?
                    "item" md/bullet-list-item?
-                   "paragraph" md/paragraph?}
+                   "paragraph" md/paragraph?
+                   "document" md/document?}
                   (base sym))]
     (if (recursive? sym)
-      [sp/ALL pred]
-      (sp/walker pred))))
+      (sp/walker pred)
+      [sp/ALL pred])))
+
+
+(defn selector
+  [s]
+  (->apath (parse s)))
 
 
 (comment
@@ -59,8 +66,6 @@
                   [:md/bullet-list-item [:md/paragraph [:md/text "bar"]]]
                   [:md/heading [:md/bullet-list-item "qux"]]]]
                 [:md/paragraph [:md/text "baz"]]]
-      selector (parse "list item")]
+      selector (parse "list .item")]
   (sp/select (->apath selector) document))
-
-
 )
