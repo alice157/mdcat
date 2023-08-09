@@ -1,9 +1,7 @@
 (ns mdcat.selector-test
   (:require
-    [clojure.data :refer [diff]]
     [clojure.test :as t]
     [com.rpl.specter :as sp]
-    [mdcat.markdown :as md]
     [mdcat.selector :as sel]))
 
 
@@ -15,28 +13,52 @@
     [:md/bullet-list-item [:md/paragraph [:md/text "foo"]]]
     [:md/bullet-list-item [:md/paragraph [:md/text "bar"]]]
     [:md/bullet-list-item [:md/bullet-list
-                           [:md/bullet-list-item [:md/paragraph [:md/text "foo"]]]
-                           [:md/bullet-list-item [:md/paragraph [:md/text "bar"]]]]]]])
+                           [:md/bullet-list-item [:md/paragraph [:md/text "baz"]]]
+                           [:md/bullet-list-item [:md/paragraph [:md/text "qux"]]]]]]])
 
 
 (t/deftest sym
-  (t/testing "recursive symbol search"
-    (t/is (= [[:md/paragraph [:md/text "wobble"]]
-              [:md/paragraph [:md/text "foo"]]
-              [:md/paragraph [:md/text "bar"]]
-              [:md/paragraph [:md/text "foo"]]
-              [:md/paragraph [:md/text "bar"]]]
-             (sp/select (sel/selector "paragraph") document))))
-  (t/testing "shallow symbol search"
-    (t/is (= [[:md/bullet-list
-               [:md/bullet-list-item [:md/paragraph [:md/text "foo"]]]
-               [:md/bullet-list-item [:md/paragraph [:md/text "bar"]]]
-               [:md/bullet-list-item [:md/bullet-list
-                                      [:md/bullet-list-item [:md/paragraph [:md/text "foo"]]]
-                                      [:md/bullet-list-item [:md/paragraph [:md/text "bar"]]]]]]]
-             (sp/select (sel/selector ".list") document)))))
-
-
-(t/deftest compound
-  (t/testing "compound symbol search"
-    (is (= [:md/paragraph [:md/text "foo"]]))))
+  (t/testing "symbol search"
+    (t/testing "recursive symbol search"
+      (t/is (= [[:md/paragraph [:md/text "wobble"]]
+                [:md/paragraph [:md/text "foo"]]
+                [:md/paragraph [:md/text "bar"]]
+                [:md/paragraph [:md/text "baz"]]
+                [:md/paragraph [:md/text "qux"]]]
+               (sp/select (sel/selector "paragraph") document))
+            "`paragraph` selects all paragraphs"))
+    (t/testing "shallow symbol search"
+      (t/is (= [[:md/bullet-list
+                 [:md/bullet-list-item [:md/paragraph [:md/text "foo"]]]
+                 [:md/bullet-list-item [:md/paragraph [:md/text "bar"]]]
+                 [:md/bullet-list-item [:md/bullet-list
+                                        [:md/bullet-list-item [:md/paragraph [:md/text "baz"]]]
+                                        [:md/bullet-list-item [:md/paragraph [:md/text "qux"]]]]]]]
+               (sp/select (sel/selector ".list") document))
+            "`.list` selects only outer list"))
+    (t/testing "compound symbol search"
+      (t/is (= [[:md/paragraph [:md/text "foo"]]
+                [:md/paragraph [:md/text "bar"]]]
+               (sp/select (sel/selector "list .item .paragraph") document)))
+      (t/is (= [[:md/paragraph [:md/text "foo"]]
+                [:md/paragraph [:md/text "bar"]]
+                [:md/paragraph [:md/text "baz"]]
+                [:md/paragraph [:md/text "qux"]]]
+               (sp/select (sel/selector "list paragraph") document))))
+    (t/testing "regular search doesn't recurse past match"
+      (t/is (= [[:md/paragraph
+                 [:md/text "foo"]
+                 [:md/paragraph [:md/text "bar"]]]]
+               (sp/select (sel/selector "paragraph")
+                          [:md/paragraph
+                           [:md/text "foo"]
+                           [:md/paragraph [:md/text "bar"]]]))))
+    (t/testing "deep search recurses past match"
+      (t/is (= [[:md/paragraph
+                 [:md/text "foo"]
+                 [:md/paragraph [:md/text "bar"]]]
+                [:md/paragraph [:md/text "bar"]]]
+               (sp/select (sel/selector "*paragraph")
+                          [:md/paragraph
+                           [:md/text "foo"]
+                           [:md/paragraph [:md/text "bar"]]]))))))

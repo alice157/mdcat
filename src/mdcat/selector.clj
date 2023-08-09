@@ -13,7 +13,7 @@
 (def parser
   (insta/parser
     "selector = (symbol <opt_whitespace>)+
-     symbol = #'(\\w|[.])+'
+     symbol = #'(\\w|[.|*])+'
      opt_whitespace = #'\\h?'"))
 
 
@@ -27,17 +27,28 @@
 
 (defmethod ->apath :selector
   [[_ & selectors]]
-  (apply sp/comp-paths (map ->apath selectors)))
+  (mapv ->apath selectors))
 
 
-(defn recursive?
+(defn match-type
   [sym]
-  (not (str/starts-with? sym ".")))
+  (case (first sym)
+    \. :shallow
+    \* :deep
+    :default))
 
 
 (defn base
   [sym]
   (str/replace sym #"^\." ""))
+
+
+(defn deep-walker
+  [pred]
+  (sp/recursive-path [] path
+                     (sp/if-path pred
+                                 (sp/continue-then-stay [sp/ALL seqable? path])
+                                 [sp/ALL seqable? path])))
 
 
 (defmethod ->apath :symbol
@@ -47,9 +58,10 @@
                    "paragraph" md/paragraph?
                    "document" md/document?}
                   (base sym))]
-    (if (recursive? sym)
-      (sp/walker pred)
-      [sp/ALL pred])))
+    (case (match-type sym)
+      :shallow [sp/ALL pred]
+      :default (sp/walker pred)
+      :deep (deep-walker pred))))
 
 
 (defn selector

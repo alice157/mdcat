@@ -221,9 +221,3 @@
       (walk)
       (f)
       (render {})))
-
-
-(defn children
-  [md]
-  (when (vector? md)
-    (rest md)))
