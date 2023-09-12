@@ -54,10 +54,10 @@
                            [:md/text "foo"]
                            [:md/paragraph [:md/text "bar"]]]))))
     (t/testing "deep search recurses past match"
-      (t/is (= [[:md/paragraph
+      (t/is (= [[:md/paragraph [:md/text "bar"]]
+                [:md/paragraph
                  [:md/text "foo"]
-                 [:md/paragraph [:md/text "bar"]]]
-                [:md/paragraph [:md/text "bar"]]]
+                 [:md/paragraph [:md/text "bar"]]]]
                (sp/select (sel/selector "*paragraph")
                           [:md/paragraph
                            [:md/text "foo"]

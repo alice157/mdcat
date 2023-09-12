@@ -73,13 +73,3 @@
       (apply f args)
       (catch Exception _
         nil))))
-
-
-(defmacro tapped
-  [fn-sym]
-  (let [fn-name (str "tapped-" (name fn-sym))]
-    `(fn ~(symbol fn-name)
-       [& args#]
-       (let [res# (apply ~fn-sym args#)]
-         (tap> [~(keyword fn-name) args# res#])
-         res#))))
