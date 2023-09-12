@@ -53,10 +53,10 @@
 
 (defmethod ->apath :symbol
   [[_ sym]]
-  (let [pred (get {"list" md/bullet-list?
-                   "item" md/bullet-list-item?
-                   "paragraph" md/paragraph?
-                   "document" md/document?}
+  (let [pred (get {"list" (u/tapped md/bullet-list?)
+                   "item" (u/tapped md/bullet-list-item?)
+                   "paragraph" (u/tapped md/paragraph?)
+                   "document" (u/tapped md/document?)}
                   (base sym))]
     (case (match-type sym)
       :shallow [sp/ALL pred]
