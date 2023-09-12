@@ -86,35 +86,6 @@
   (tag [this] [:md/unknown (type this)]))
 
 
-#_(extend-protocol Tag
-  Object
-  (tag [this] [:md/unknown (type this)])
-
-  BulletList
-  (tag [_this] :md/bullet-list)
-
-  Document
-  (tag [_this] :md/document)
-  
-  BulletListItem
-  (tag [_this] :md/bullet-list-item)
-  
-  Paragraph
-  (tag [_this] :md/paragraph)
-  
-  Text
-  (tag [_this] :md/text)
-
-  Emphasis
-  (tag [_this] :md/emphasis)
-  
-  SoftLineBreak
-  (tag [_this] :md/soft-line-break)
-  
-  Heading
-  (tag [_this] :md/heading))
-
-
 #_(ns-unmap *ns* 'walk)
 (defmulti walk tag)
 
