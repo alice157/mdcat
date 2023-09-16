@@ -42,6 +42,9 @@
     :md/section-container
     :md/newline-container})
 
+(derive :md/inline-container :md/container)
+(derive :md/section-container :md/container)
+(derive :md/newline-container :md/container)
 
 ;; TODO: handle syms with namespaces
 (defmacro deftag
