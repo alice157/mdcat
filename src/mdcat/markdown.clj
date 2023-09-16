@@ -109,45 +109,40 @@
   (tag node))
 
 
-(defn parse
-  [^String s]
-  (let [options (MutableDataSet.)
-        ^Parser parser (.build (Parser/builder options))]
-    (.parse parser s)))
 
 
-#_(ns-unmap *ns* 'render)
-(defmulti render (fn [node _args]
+#_(ns-unmap *ns* 'render*)
+(defmulti render* (fn [node _args]
                    (first node)))
 
 
-(defmethod render nil
+(defmethod render* nil
   [_ _]
   "")
 
 
-(defmethod render :md/section-container
+(defmethod render* :md/section-container
   [[_tag & children] args]
   (str
     (str/join "\n\n"
-              (map #(render % args) children))
+              (map #(render* % args) children))
     "\n"))
 
 
-(defmethod render :md/newline-container
+(defmethod render* :md/newline-container
   [[_tag & children] args]
   (str/join "\n"
-            (map #(render % args) children)))
+            (map #(render* % args) children)))
 
 
-(defmethod render :md/inline-container
+(defmethod render* :md/inline-container
   [[_tag & children] args]
-  (str/join "" (map #(render % args) children)))
+  (str/join "" (map #(render* % args) children)))
 
 
-(defmethod render :md/heading
+(defmethod render* :md/heading
   [[_tag & children] args]
-  (render (into [:md/newline-container
+  (render* (into [:md/newline-container
                  [:md/paragraph [:md/text (str (apply str (repeat (:heading-level args 1) "#"))
                                                " ")]
                                  (first children)]]
@@ -155,10 +150,10 @@
           (update args :heading-level (fnil inc 1))))
 
 
-(defmethod render :md/bullet-list-item
+(defmethod render* :md/bullet-list-item
   [[_tag & children] args]
-  (render (into [:md/newline-container
-                 [:md/paragraph [:md/text BULLET] (first children)]]
+  (render* (into [:md/newline-container
+                 [:md/inline-container [:md/text BULLET] (first children)]]
                 (rest children))
           args))
 
@@ -170,27 +165,38 @@
     (str (indent-str level))))
 
 
-(defmethod render :md/bullet-list
+(defmethod render* :md/bullet-list
   [[_tag & children] args]
   (let [bullet-level (:bullet-level args 0)]
     (->
       (into [:md/newline-container]
-            (comp (map #(render % (assoc args :bullet-level (inc bullet-level))))
+            (comp (map #(render* % (assoc args :bullet-level (inc bullet-level))))
                   (map #(indent-list-child % bullet-level))
                   (map #(vector :md/leaf %)))
             children)
-      (render args))))
+      (render* args))))
 
 
-(defmethod render :md/leaf
+(defmethod render* :md/leaf
   [[_tag & children] _args]
   (str/join "" children))
+
+  
+(defn parse
+  [^String s]
+  (let [options (MutableDataSet.)
+        ^Parser parser (.build (Parser/builder options))]
+    (walk (.parse parser s))))
+
+
+(defn render
+  [md]
+  (render* md {}))
 
 
 (defn xform-string
   [string f]
   (-> string
       (parse)
-      (walk)
       (f)
-      (render {})))
+      (render)))

@@ -94,8 +94,9 @@
 (defn parse-resource
   [ctx input]
   (prn input)
-  (puget/cprint (md/walk (md/parse (read-resource ctx input))))
+  (puget/cprint (md/parse (read-resource ctx input)))
   (assoc ctx :did-output? true))
+
 
 
 (def tasks
