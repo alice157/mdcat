@@ -1,8 +1,6 @@
 (ns mdcat.task
   (:require
-    [clojure.string :as str]
     [mdcat.markdown :as md]
-    [mdcat.xforms :as xforms]
     [puget.printer :as puget]))
 
 
@@ -58,7 +56,7 @@
 (defn xform-resource
   ([ctx input xform-id output]
    (let [s (read-resource ctx input)
-         xformed (md/xform-string s (get xforms/xforms (keyword xform-id)))]
+         xformed (md/xform-string s identity)]
      (-> ctx
          (assoc-in [:resources output] xformed)
          (last-resource output))))
