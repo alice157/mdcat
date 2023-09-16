@@ -3,11 +3,7 @@
     [clojure.string :as str]
     [com.rpl.specter :as sp]
     [instaparse.core :as insta]
-    [mdcat.markdown :as md]
-    [mdcat.util :as u]))
-
-
-;; list>* should match all top level items of a list
+    [mdcat.markdown :as md]))
 
 
 (def parser
