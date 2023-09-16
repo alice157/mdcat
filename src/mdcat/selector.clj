@@ -42,12 +42,13 @@
   [sym]
   (str/replace sym #"^[.*]" ""))
 
+
 (defn deep-walker
   [pred]
   (sp/recursive-path [] path
                      (sp/if-path pred
-                                 (sp/continue-then-stay [sp/ALL seqable? path])
-                                 [sp/ALL seqable? path])))
+                                 (sp/continue-then-stay [sp/ALL vector? path])
+                                 [sp/ALL vector? path])))
 
 
 (defmethod ->apath :symbol
