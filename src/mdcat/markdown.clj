@@ -76,7 +76,6 @@
 (deftag Heading :md/newline-container)
 (deftag BulletListItem :md/newline-container)
 (deftag BulletList :md/newline-container)
-
 (deftag Paragraph :md/newline-container)
 
 (deftag Document :md/section-container)
