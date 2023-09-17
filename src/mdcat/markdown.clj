@@ -23,7 +23,7 @@
 (set! *warn-on-reflection* true)
 
 
-(def ^:const INDENT "    ")
+(def ^:const INDENT "  ")
 (def ^:const BULLET "- ")
 
 
@@ -42,6 +42,8 @@
     :md/section-container
     :md/newline-container})
 
+;; there is some unholy coupling of vectorizing the parse tree
+;; and rendering logic here - to be fixed in `md.render`
 (derive :md/inline-container :md/container)
 (derive :md/section-container :md/container)
 (derive :md/newline-container :md/container)
@@ -107,8 +109,6 @@
 (defmethod walk :default
   [node]
   (tag node))
-
-
 
 
 #_(ns-unmap *ns* 'render*)
@@ -181,8 +181,8 @@
   [[_tag & children] _args]
   (str/join "" children))
 
-  
-(defn parse
+
+(defn- parse
   [^String s]
   (let [options (MutableDataSet.)
         ^Parser parser (.build (Parser/builder options))]
