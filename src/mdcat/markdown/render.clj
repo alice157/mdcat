@@ -20,24 +20,37 @@
 
 (defn join-with-n-newlines
   [n strs]
-  (str/join (apply str (repeat n "\n"))
-            (map str/trim-newline strs)))
+  (if (pos? n)
+    (str/join (apply str (repeat n "\n"))
+              (map str/trim-newline strs))
+    (str/join (map str/trim-newline strs))))
 
 
 ;; this indents every string, should we actually indent each line?
 ;; should see what parser does here and match
-(defn indent-str
+(defn indents
   [level]
   (apply str (repeat level INDENT)))
 
 
 (defn tag-key
-  [md]
-  (first md))
+  [md & _]
+  (if (string? md)
+    ::string
+    (first md)))
 
+
+(def render (make-hierarchy))
+
+(derive render :md/paragraph ::inline-container)
+(derive render :md/bullet-list ::newline-container)
+(derive render :md/document ::section-container)
+
+(derive render :md/text ::string)
+(derive render :md/soft-line-break ::string)
 
 #_(ns-unmap *ns* 'render*)
-(defmulti render* tag-key)
+(defmulti render* tag-key :hierarchy render)
 
 
 (defmethod render* :default
@@ -45,15 +58,50 @@
   (throw (ex-info (str "Unknown tag: " (tag-key md)) ctx)))
 
 
-(defmethod render* :md/text
+(defmethod render* ::inline-container
+  [md ctx]
+  (->> (rest md)
+       (map #(render* % ctx))
+       (join-with-n-newlines 0)))
+
+
+(defmethod render* ::newline-container
+  [md ctx]
+  (->> (rest md)
+       (map #(render* % ctx))
+       (join-with-n-newlines 1)))
+
+
+(defmethod render* ::string
   [md _]
   (str (second md)))
 
 
+(defmethod render* ::section-container
+  [md ctx]
+  (->> (rest md)
+       (map #(render* % ctx))
+       (join-with-n-newlines 2)))
+
+
+(defmethod render* :md/document
+  [md ctx]
+  (-> (render* (assoc md 0 ::section-container) ctx)
+      (str "\n")))
+
+
+(defn bullet-list-item
+  [s]
+  (str BULLET s))
+
+
 (defmethod render* :md/bullet-list-item
   [md ctx]
-  (let [])
-  (join-with-n-newlines ))
+  (->> (into [(str (indents (:indent-level ctx))
+                   (bullet-list-item (render* (second md) ctx)))]
+             (map #(render* % (update ctx :indent-level inc)))
+             (drop 2 md))
+       (join-with-n-newlines 1)))
 
 
 (defn render
