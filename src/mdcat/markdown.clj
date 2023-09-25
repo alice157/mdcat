@@ -182,7 +182,7 @@
   (str/join "" children))
 
 
-(defn- parse
+(defn parse
   [^String s]
   (let [options (MutableDataSet.)
         ^Parser parser (.build (Parser/builder options))]
