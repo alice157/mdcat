@@ -40,17 +40,17 @@
     (first md)))
 
 
-(def render (make-hierarchy))
+(def render-hierarchy
+  (ref (-> (make-hierarchy)
+           (derive :md/paragraph ::inline-container)
+           (derive :md/bullet-list ::newline-container)
+           (derive :md/document ::section-container)
+           (derive :md/text ::string)
+           (derive :md/soft-line-break ::string))))
 
-(derive render :md/paragraph ::inline-container)
-(derive render :md/bullet-list ::newline-container)
-(derive render :md/document ::section-container)
 
-(derive render :md/text ::string)
-(derive render :md/soft-line-break ::string)
-
+(defmulti render* tag-key :hierarchy render-hierarchy)
 #_(ns-unmap *ns* 'render*)
-(defmulti render* tag-key :hierarchy render)
 
 
 (defmethod render* :default
