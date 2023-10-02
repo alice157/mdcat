@@ -4,13 +4,11 @@
   (:require
     [clojure.edn :as edn]
     [clojure.java.shell :as sh]
-    [clojure.string :as str]
     [clojure.tools.cli :as cli]
     [com.rpl.specter :as sp]
     [mdcat.markdown :as md]
     [mdcat.markdown.render :as mdr]
     [mdcat.selector :as sel]
-    [mdcat.task :as task]
     [puget.printer :as puget]))
 
 
