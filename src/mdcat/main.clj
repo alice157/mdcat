@@ -2,67 +2,28 @@
   (:gen-class
     :main true)
   (:require
+    [clojure.edn :as edn]
+    [clojure.java.shell :as sh]
     [clojure.string :as str]
     [clojure.tools.cli :as cli]
+    [com.rpl.specter :as sp]
+    [mdcat.markdown :as md]
+    [mdcat.markdown.render :as mdr]
+    [mdcat.selector :as sel]
     [mdcat.task :as task]
+    [mdcat.task2 :as t2]
     [puget.printer :as puget]))
 
 
 (set! *warn-on-reflection* true)
 
 
-;; Forgive me
-(def pipeline (atom []))
-
-
-(defn- maybe-keywordify
-  [s]
-  (if (and (string? s) (str/starts-with? s ":"))
-    (keyword (subs s 1))
-    s))
-
-
-(defn- split-args
-  [s]
-  (prn s)
-  (cond
-    (string? s)
-    (map (comp maybe-keywordify str/trim) (str/split s #","))
-    
-    :else
-    [nil]))
-
-
-(defn- conj-pipeline-fn
-  [k]
-  (fn conj-pipeline
-    [_ args]
-    (swap! pipeline
-           conj (into [k] (map maybe-keywordify (split-args args))))))
-
-
-(def cli-options
+(def cli-options2
   [["-h" "--help"]
    ["-o" "--opts" "prints parsed options"]
-   ["-s" "--select FROM,[TO]" "selects a resource"
-    :multi true
-    :update-fn (conj-pipeline-fn :select)]
-   ["-x" "--xform [[FROM]],XFORM_ID,[TO]" "transforms a resource"
-    :multi true
-    :update-fn (conj-pipeline-fn :xform)]
-   ["-w" "--write [TO]" "writes a resource"
-    :multi true
-    :update-fn (conj-pipeline-fn :write)]
-   ["-p" "--parse" "prints a parse tree and passes through"
-    :multi true
-    :update-fn (conj-pipeline-fn :parse)]
-
-   ["-r" "--read [[FROM]]" "reads a file"
-    :multi true
-    :update-fn (conj-pipeline-fn :read)]
-   ["-X" "--xform2 SELECTOR,XFORM" "super secret xform2"
-    :multi true
-    :update-fn (conj-pipeline-fn :xform2)]])
+   ["-s" "--select SELECTOR"]
+   ["-x" "--xform COMMAND"]
+   ["-t" "--text" "output as text"]])
 
 
 (defn usage
@@ -70,49 +31,34 @@
   (println (str "Usage:\n" (:summary opts))))
 
 
-(defn errors
-  [opts]
-  (doseq [err (:errors opts)]
-    (println err))
-  (System/exit 1))
 
+(defn run-command
+  [command x]
+  (edn/read-string (:out (sh/sh command :in (pr-str x)))))
 
-(defn reduce-pipeline
-  [pipeline]
-  (let [out (reduce task/reducer {} pipeline)]
-    (if-not (:did-output? out)
-      (apply (partial task/print-resource out) [nil])
-      out)))
-
-
-(defn parse-opts
-  [args]
-  (reset! pipeline [])
-  (let [opts (cli/parse-opts args cli-options)
-        pipeline @pipeline]
-    (if (seq pipeline)
-      (assoc opts :pipeline pipeline)
-      opts)))
 
 
 (defn -main
-  "I don't do a whole lot ... yet."
   [& args]
-  (let [opts (parse-opts args)]
+  (let [opts (cli/parse-opts args cli-options2)]
     (when (get-in opts [:options :opts])
       (puget/cprint opts))
-    (cond
-      (seq (:errors opts))
-      (errors opts)
-  
-      (get-in opts [:options :help])
-      (usage opts)
+    (let [md (md/parse (slurp (first (:arguments opts))))
+          selector (get-in opts [:options :select])
+          xform (get-in opts [:options :xform])
+          md' (cond
+                xform
+                (sp/transform (sel/selector (or selector "document"))
+                              (partial run-command xform)
+                              md)
 
-      (seq (:pipeline opts))
-      (do (println "Executing pipeline:")
-          (puget/pprint (:pipeline opts))
-          (reduce-pipeline (:pipeline opts)))
+                selector
+                (sp/select (sel/selector selector) md)
 
-
-      :else
-      (usage opts))))
+                :else
+                md)]
+      (if (get-in opts [:options :text])
+        (print (mdr/render md'))
+        (puget/cprint md'))
+      (flush)
+      (System/exit 0))))
