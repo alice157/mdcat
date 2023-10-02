@@ -62,7 +62,7 @@
   [md ctx]
   (->> (rest md)
        (map #(render* % ctx))
-       (join-with-n-newlines 0)))
+       (str/join)))
 
 
 (defmethod render* ::newline-container
