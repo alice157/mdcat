@@ -1,4 +1,4 @@
-FROM clojure:temurin-11-lein
+FROM --platform=linux/amd64 clojure:temurin-11-lein
 
 # Install essential tooling
 RUN apt update
