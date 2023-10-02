@@ -23,7 +23,9 @@
 
 (defmethod ->apath :selector
   [[_ & selectors]]
-  (mapv ->apath selectors))
+  (into [(->apath (first selectors))]
+        (map #(vector sp/ALL vector? (->apath %)))
+        (rest selectors)))
 
 
 (defn match-type
@@ -56,7 +58,7 @@
                   (base sym))]
     (case (match-type sym)
       :shallow [sp/ALL pred]
-      :default (sp/walker pred)
+      :default  (sp/walker pred)
       :deep (deep-walker pred))))
 
 
