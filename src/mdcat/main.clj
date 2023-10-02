@@ -11,7 +11,6 @@
     [mdcat.markdown.render :as mdr]
     [mdcat.selector :as sel]
     [mdcat.task :as task]
-    [mdcat.task2 :as t2]
     [puget.printer :as puget]))
 
 
