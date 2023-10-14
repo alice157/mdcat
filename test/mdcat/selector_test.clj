@@ -51,18 +51,36 @@
                  [:md/text "foo"]
                  [:md/paragraph [:md/text "bar"]]]]
                (sp/select (sel/selector "paragraph")
-                          [:md/paragraph
-                           [:md/text "foo"]
-                           [:md/paragraph [:md/text "bar"]]]))))
+                          [:md/document
+                           [:md/paragraph
+                            [:md/text "foo"]
+                            [:md/paragraph [:md/text "bar"]]]]))))
     (t/testing "deep search recurses past match"
       (t/is (= [[:md/paragraph [:md/text "bar"]]
                 [:md/paragraph
                  [:md/text "foo"]
                  [:md/paragraph [:md/text "bar"]]]]
                (sp/select (sel/selector "*paragraph")
-                          [:md/paragraph
-                           [:md/text "foo"]
-                           [:md/paragraph [:md/text "bar"]]]))))))
+                          [:md/document
+                           [:md/paragraph
+                            [:md/text "foo"]
+                            [:md/paragraph [:md/text "bar"]]]]))))
+    (t/testing "repeated symbols don't match outer"
+      (t/is (= [[:md/bullet-list
+                 [:md/bullet-list-item [:md/text "bar"]]]]
+               (sp/select (sel/selector "list list")
+                          [:md/document
+                           [:md/bullet-list
+                            [:md/bullet-list-item [:md/text "foo"]
+                             [:md/bullet-list
+                              [:md/bullet-list-item [:md/text "bar"]]]]
+                            [:md/bullet-list-item [:md/text "baz"]]]]))))
+    (t/testing "repeated symbols don't match outer, shallow"
+      (t/is (= [[:md/paragraph [:md/text "foo"]]]
+               (sp/select (sel/selector "paragraph .paragraph")
+                          [:md/document
+                           [:md/paragraph
+                            [:md/paragraph [:md/text "foo"]]]]))))))
 
 (t/deftest transform
   (t/testing "shallow transforms"
@@ -81,27 +99,31 @@
                #(conj % :added)
                document))))
   (t/testing "default transforms"
-    (t/is (= [:md/paragraph
-              [:md/text "foo"]
-              [:md/paragraph [:md/text "bar"]]
-              :added]
+    (t/is (= [:md/document
+              [:md/paragraph
+               [:md/text "foo"]
+               [:md/paragraph [:md/text "bar"]]
+               :added]]
              (sp/transform
                (sel/selector "paragraph")
                #(conj % :added)
-               [:md/paragraph
-                [:md/text "foo"]
-                [:md/paragraph [:md/text "bar"]]]))))
+               [:md/document
+                [:md/paragraph
+                 [:md/text "foo"]
+                 [:md/paragraph [:md/text "bar"]]]]))))
   (t/testing "deep transforms"
-    (t/is (= [:nope
-              [:yep
-               [:md/text "bar"] [:md/text "baz"]]
-              [:md/text "foo"]]
+    (t/is (= [:md/document
+              [:nope
+               [:yep
+                [:md/text "bar"] [:md/text "baz"]]
+               [:md/text "foo"]]]
              (sp/transform (sel/selector "*paragraph")
                            #(into [(if (md/text? (second %))
                                      :yep
                                      :nope)]
                                   (rest %))
-                           [:md/paragraph
+                           [:md/document
                             [:md/paragraph
-                             [:md/text "bar"] [:md/text "baz"]]
-                            [:md/text "foo"]])))))
+                             [:md/paragraph
+                              [:md/text "bar"] [:md/text "baz"]]
+                             [:md/text "foo"]]])))))

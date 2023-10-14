@@ -23,9 +23,7 @@
 
 (defmethod ->apath :selector
   [[_ & selectors]]
-  (into [(->apath (first selectors))]
-        (map #(vector sp/ALL vector? (->apath %)))
-        (rest selectors)))
+  (mapv ->apath selectors))
 
 
 (defn match-type
@@ -53,13 +51,14 @@
   [[_ sym]]
   (let [pred (get {"list" md/bullet-list?
                    "item" md/bullet-list-item?
-                   "paragraph" md/paragraph?
-                   "document" md/document?}
+                   "paragraph" md/paragraph?}
                   (base sym))]
-    (case (match-type sym)
-      :shallow [sp/ALL pred]
-      :default  (sp/walker pred)
-      :deep (deep-walker pred))))
+    [sp/ALL
+     vector?
+     (get {:shallow pred
+           :default (sp/walker pred)
+           :deep (deep-walker pred)}
+          (match-type sym))]))
 
 
 (defn selector
