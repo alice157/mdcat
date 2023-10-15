@@ -148,6 +148,7 @@ For maximum cron-job goodness, `mdcat` is intended to be compilable through Graa
 - Need to better define how transforms work on deep selectors
 - Some markdown shorthand may be helpful - having to specify `[:md/paragraph [:md/text "foo"]]` just because flexmark does it that way may not be necessary.
 - Need to re-investigate using flexmark's renderer.
+- Another cool usecase could be adding a table of contents. Because the document selector is currently not available, I'm not sure if that's possible.
 
 # Thanks
 https://github.com/greglook/cljstyle - build scaffolding for GraalVM
