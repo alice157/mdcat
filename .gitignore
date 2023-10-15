@@ -14,3 +14,4 @@ pom.xml.asc
 /mdcat
 .clj-kondo/
 .lsp/
+.DS_store
