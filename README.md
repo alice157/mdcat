@@ -138,5 +138,16 @@ I had trouble figuring out how to surgically alter flexmark trees and render the
 # Building
 For maximum cron-job goodness, `mdcat` is intended to be compilable through GraalVM. Most testing has been done by just running it with `lein run`, because development is happening on Apple Silicon, where the Graal build doesn't work. `script/docker-build --output mdcat` will, in theory, give you a binary called `mdcat` when run on a `x86_64` machine with docker.
 
+# Limitations
+- Currently fires up a process for every selected fragment when transforming. This feels... bad, and there should probably be options to enable better control over this (maybe enable sending the entire vector of selections, or send entries one by one over stdin).
+- Doesn't have enough unit test coverage, and doesn't have any end to end testing.
+- I want to somehow add programmable selectors - maybe include sci, and use that for transforms and selectors?
+- Needs implementations for more flexmark nodes.
+- Some of the markdown stuff should be spun out into a library for use in babashka or sci scripts.
+- Something feels off about the way the code is currently organized, although it has improved over the course of this project. Another shuffling of functions/namespaces/responsibilities may be in order.
+- Need to better define how transforms work on deep selectors
+- Some markdown shorthand may be helpful - having to specify `[:md/paragraph [:md/text "foo"]]` just because flexmark does it that way may not be necessary.
+- Need to re-investigate using flexmark's renderer.
+
 # Thanks
 https://github.com/greglook/cljstyle - build scaffolding for GraalVM
