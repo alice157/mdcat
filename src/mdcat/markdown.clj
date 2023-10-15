@@ -24,6 +24,7 @@
 
 
 (defprotocol Tag
+
   (tag [this]))
 
 

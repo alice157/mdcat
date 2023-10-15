@@ -28,11 +28,9 @@
   (println (str "Usage:\n" (:summary opts))))
 
 
-
 (defn run-command
   [command x]
   (edn/read-string (:out (sh/sh command :in (pr-str x)))))
-
 
 
 (defn -main
