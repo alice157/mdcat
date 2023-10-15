@@ -149,6 +149,6 @@ For maximum cron-job goodness, `mdcat` is intended to be compilable through Graa
 - Some markdown shorthand may be helpful - having to specify `[:md/paragraph [:md/text "foo"]]` just because flexmark does it that way may not be necessary.
 - Need to re-investigate using flexmark's renderer.
 - Another cool usecase could be adding a table of contents. Because the document selector is currently not available, I'm not sure if that's possible.
-
+- Some obsidian-specific markdown extensions (tags, etc) could also be helpful
 # Thanks
 https://github.com/greglook/cljstyle - build scaffolding for GraalVM
