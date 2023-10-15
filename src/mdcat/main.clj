@@ -40,6 +40,9 @@
   (let [opts (cli/parse-opts args cli-options2)]
     (when (get-in opts [:options :opts])
       (puget/cprint opts))
+    (when (get-in opts [:options :help])
+      (usage opts)
+      (System/exit 0))
     (let [md (md/parse (slurp (first (:arguments opts))))
           selector (get-in opts [:options :select])
           xform (get-in opts [:options :xform])
